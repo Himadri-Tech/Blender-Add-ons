@@ -21,7 +21,7 @@ The "Blender Custom Object" add-on enhances Blender's functionality by introduci
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/blender-custom-object-addon.git
+   git clone https://github.com/Himadri-Tech/Blender-Add-ons.git
    ```
 
 2. Install the add-on in Blender:
