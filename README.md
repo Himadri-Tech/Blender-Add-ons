@@ -1,51 +1,53 @@
-# Blender-Add-ons
-The "Blender Custom Object" add-on enhances Blender's functionality by introducing a custom object type. This add-on simplifies the process of creating a specific type of object within the Blender environment.
+# Blender Add-on: Generate Muscle System
 
-Certainly! A Git description for your Blender add-on can serve as a concise overview of the project. Here's a template you can use:
-
----
-
-# Blender Custom Object Add-on
-
-## Overview
-
-The "Blender Custom Object" add-on enhances Blender's functionality by introducing a custom object type. This add-on simplifies the process of creating a specific type of object within the Blender environment.
+This Blender add-on, "Generate Muscle System," provides a convenient way to create realistic muscle systems within Blender. It simplifies the process of generating complex muscle structures for characters, streamlining the workflow for character rigging and animation.
 
 ## Features
 
-- **Custom Object Creation:** Adds a new object type (e.g., cube) to Blender using a custom operator.
-- **Ease of Use:** Accessible through the "Add" menu in Blender's 3D View.
+- **Muscle System Generation:** Automates the creation of realistic muscle systems for characters.
+- **Customizable Parameters:** Fine-tune muscle parameters such as size, density, and attachment points.
+- **Integration with Rigging:** Easily integrates with existing character rigs in Blender.
 
 ## Installation
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/Himadri-Tech/Blender-Add-ons.git
-   ```
+    ```bash
+    git clone https://github.com/Himadri-Tech/Blender-Add-ons.git
+    ```
 
-2. Install the add-on in Blender:
+2. Open Blender.
 
-   - Open Blender.
-   - Go to "Edit" > "Preferences."
-   - In the Preferences window, click on the "Add-ons" tab.
-   - Click "Install" and select the "custom_object.py" file.
-   - Enable the "Custom Object" add-on.
+3. Go to "Edit" > "Preferences."
+
+4. In the Preferences window, click on the "Add-ons" tab.
+
+5. Click "Install" and select the "generate_muscle_system.py" file from the cloned repository.
+
+6. Enable the "Generate Muscle System" add-on.
 
 ## Usage
 
 1. Open Blender.
-2. Press Shift + A to open the "Add" menu.
-3. Navigate to "Mesh" > "Custom Object."
+
+2. Navigate to the "Create" menu.
+
+3. Select "Generate Muscle System."
+
+4. Adjust the parameters in the add-on panel to customize the muscle system.
+
+5. Click "Generate" to create the muscle system for the selected character.
 
 ## Contribution
 
-Contributions are welcome! If you have ideas for improvements or new features, feel free to open an issue or submit a pull request.
+Contributions are welcome! If you have ideas for improvements, new features, or bug fixes, please open an issue or submit a pull request.
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
 
----
+## Acknowledgments
 
-Replace placeholders such as "your-username" with your actual GitHub username. Make sure to include a license file (e.g., LICENSE) if you haven't already, and adjust the sections as needed based on your specific add-on features and functionality.
+Special thanks to the Blender community for their continuous support and feedback.
+
+Feel free to reach out with any questions or feedback. Happy animating! 🚀
