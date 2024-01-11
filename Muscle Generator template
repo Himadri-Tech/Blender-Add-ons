@@ -7,7 +7,7 @@ bl_info = {
     "location": "View3D > Add > Mesh",
     "description": "Generate a simple muscle system for rigging.",
     "warning": "experimental",
-    "doc_url": "https://techadigi.com",
+    "doc_url": "https://github.com/Himadri-Tech/Blender-Add-ons.git",
     "tracker_url": "https://yourbugtrackerlink.com",
     "support": "COMMUNITY",
     "category": "Object"
