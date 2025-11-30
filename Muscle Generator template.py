@@ -1,103 +1,283 @@
 bl_info = {
-    "name": "Muscle Generator",
-    "blender": (2, 80, 0),
-    "category": "Object",
+    "name": "Generate Muscle System",
     "author": "Himadri Roy Sarkar",
-    "version": (1, 0, 0),
-    "location": "View3D > Add > Mesh",
-    "description": "Generate a simple muscle system for rigging.",
-    "warning": "experimental",
-    "doc_url": "https://github.com/Himadri-Tech/Blender-Add-ons.git",
-    "tracker_url": "https://yourbugtrackerlink.com",
-    "support": "COMMUNITY",
-    "category": "Object"
+    "version": (1, 0),
+    "blender": (4, 0, 0),
+    "location": "Properties > Physics",
+    "description": "Provides a convenient way to create realistic muscle systems within Blender. It simplifies the process of generating complex muscle structures for characters, streamlining the workflow for character rigging and animation.",
+    "category": "Physics",
 }
 
-
 import bpy
+from bpy.types import Operator, Panel
+from bpy.props import FloatProperty
 
-def create_muscle(muscle_name, parent_bone, length, thickness):
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0))
-    muscle_obj = bpy.context.active_object
-    muscle_obj.name = muscle_name
-    
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value":(0, 0, length)})
-    bpy.ops.object.mode_set(mode='OBJECT')
-    
-    bpy.ops.object.modifier_add(type='SUBSURF')
-    bpy.context.object.modifiers["Subdivision Surface"].levels = 2
-    bpy.ops.object.modifier_apply({"object": muscle_obj}, modifier="Subdivision Surface")
-    
-    bpy.ops.object.modifier_add(type='SMOOTH')
-    bpy.context.object.modifiers["Smooth"].factor = 0.5
-    bpy.ops.object.modifier_apply({"object": muscle_obj}, modifier="Smooth")
-    
-    bpy.ops.object.origin_set(type='ORIGIN_CENTER_OF_MASS', center='BOUNDS')
-    
-    # Create bone for the muscle
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.armature.bone_primitive_add(name=muscle_name)
-    bpy.ops.object.mode_set(mode='OBJECT')
-    muscle_bone = bpy.context.object.data.edit_bones[muscle_name]
-    muscle_bone.head = parent_bone.head
-    muscle_bone.tail = muscle_bone.head + (0, 0, length)
-    
-    # Parent the muscle object to the armature
-    bpy.context.view_layer.objects.active = bpy.data.objects[parent_bone.id_data.name]
-    bpy.ops.object.mode_set(mode='POSE')
-    bpy.ops.pose.bone_select_all(action='DESELECT')
-    bpy.context.object.data.bones.active = bpy.context.object.data.bones[parent_bone.name]
-    bpy.ops.pose.bone_select()
-    bpy.context.view_layer.objects.active = bpy.data.objects[muscle_obj.name]
-    bpy.ops.object.parent_set(type='BONE')
-    
-    return muscle_obj
+# ──────────────────────────────────────────────────────────────
+# Slider Update for Global Muscle Tension
+# ──────────────────────────────────────────────────────────────
+def update_muscle_tension(self, context):
+    mod = self.modifiers.get("MuscleSim")
+    if mod and mod.type == 'SOFT_BODY':
+        mod.settings.goal_default = 1.0 - (self.muscle_tension * 0.8)
 
-class OBJECT_OT_generate_muscle_system(bpy.types.Operator):
-    bl_idname = "object.generate_muscle_system"
-    bl_label = "Generate Muscle System"
+# ──────────────────────────────────────────────────────────────
+# OPERATORS
+# ──────────────────────────────────────────────────────────────
+class MUSCLE_OT_generate_muscle(Operator):
+    bl_idname = "muscle.generate_muscle"
+    bl_label = "Generate Muscle Between Bones"
+    bl_description = "Creates a volumetric muscle mesh between two selected bones and sets up simulation"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        # Replace 'Armature' and 'Spine' with your armature and spine bone names
-        armature_name = 'YourArmatureName'  # Change 'YourArmatureName' to the actual name of your armature
-        spine_bone_name = 'Spine'
+        arm = context.active_object
+        if arm.type != 'ARMATURE':
+            self.report({'ERROR'}, "Select an armature as active object")
+            return {'CANCELLED'}
 
-        # Select the armature object
-        bpy.data.objects[armature_name].select_set(True)
-        bpy.context.view_layer.objects.active = bpy.data.objects[armature_name]
+        selected_bones = [b for b in arm.pose.bones if b.bone.select]
+        if len(selected_bones) != 2:
+            self.report({'ERROR'}, "Select exactly two bones (origin and insertion)")
+            return {'CANCELLED'}
 
-        # Switch to Pose Mode
-        bpy.ops.object.mode_set(mode='POSE')
+        bone1, bone2 = selected_bones
 
-        # Create muscles along the spine
-        for i in range(1, 6):
-            muscle_name = f'Muscle_{i}'
-            length = 1.0
-            thickness = 0.1
-            parent_bone = bpy.context.object.pose.bones[spine_bone_name]
+        # Switch to object mode
+        bpy.ops.object.mode_set(mode='OBJECT')
 
-            create_muscle(muscle_name, parent_bone, length, thickness)
+        # Create cylinder muscle
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.2, depth=2, vertices=16)
+        muscle = context.active_object
+        muscle.name = f"Muscle_{bone1.name}_{bone2.name}"
 
-            # Move to the next spine bone
-            bpy.ops.pose.bone_select_all(action='DESELECT')
-            bpy.context.object.data.bones.active = bpy.context.object.data.bones[spine_bone_name + f'.00{i}']
-            bpy.ops.pose.bone_select()
+        # Position and orient
+        mat = arm.matrix_world
+        pos1 = mat @ bone1.head
+        pos2 = mat @ bone2.head
+        mid = (pos1 + pos2) / 2
+        muscle.location = mid
+        direction = pos2 - pos1
+        muscle.scale.z = direction.length / 2
+        muscle.rotation_quaternion = direction.to_track_quat('Z', 'Y')
 
+        # Add hooks for attachment
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+
+        # Hook1 for bone1 (bottom end)
+        for v in muscle.data.vertices:
+            if v.co.z < -0.9:
+                v.select = True
+        bpy.ops.object.mode_set(mode='OBJECT')
+        hook1 = muscle.modifiers.new(name="Hook_Bone1", type='HOOK')
+        hook1.object = arm
+        hook1.subtarget = bone1.name
+        hook1.vertex_indices_set([v.index for v in muscle.data.vertices if v.select])
+
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+
+        # Hook2 for bone2 (top end)
+        for v in muscle.data.vertices:
+            if v.co.z > 0.9:
+                v.select = True
+        bpy.ops.object.mode_set(mode='OBJECT')
+        hook2 = muscle.modifiers.new(name="Hook_Bone2", type='HOOK')
+        hook2.object = arm
+        hook2.subtarget = bone2.name
+        hook2.vertex_indices_set([v.index for v in muscle.data.vertices if v.select])
+
+        # Add Soft Body for simulation (muscle-optimized)
+        mod = muscle.modifiers.new("MuscleSim", 'SOFT_BODY')
+        sb = mod.settings
+        sb.mass = 1.5  # Heavier for muscle inertia
+        sb.use_goal = True
+        vg = muscle.vertex_groups.new(name="Muscle_Pin")
+        # Pin ends stiff, middle soft
+        vg.add([v.index for v in muscle.data.vertices if abs(v.co.z) > 0.9], 1.0, 'REPLACE')
+        vg.add([v.index for v in muscle.data.vertices if abs(v.co.z) < 0.5], 0.3, 'REPLACE')
+        sb.vertex_group_goal = "Muscle_Pin"
+        sb.goal_min = 0.0
+        sb.pull = 0.95  # Strong volume preservation
+        sb.push = 0.95
+        sb.bend = 0.8
+        sb.damping = 2.0  # Quick settle
+        sb.use_edges = True
+        sb.use_self_collision = True
+
+        muscle.muscle_tension = 0.25  # Default tension
+
+        self.report({'INFO'}, "Muscle generated and simulated!")
         return {'FINISHED'}
 
+class MUSCLE_OT_setup_motion_painter(Operator):
+    bl_idname = "muscle.setup_motion_painter"
+    bl_label = "Setup Muscle Motion Painter"
+    bl_description = "Auto-paints soft areas on muscles based on bone motion using Dynamic Paint"
+    bl_options = {'REGISTER', 'UNDO'}
 
-def menu_func(self, context):
-    self.layout.operator(OBJECT_OT_generate_muscle_system.bl_idname)
+    def execute(self, context):
+        muscle = context.active_object
+        if not muscle or muscle.type != 'MESH':
+            self.report({'ERROR'}, "Select a muscle mesh")
+            return {'CANCELLED'}
 
+        arm = muscle.parent if muscle.parent and muscle.parent.type == 'ARMATURE' else None
+        if not arm:
+            for obj in context.selected_objects:
+                if obj.type == 'ARMATURE':
+                    arm = obj
+                    break
+        if not arm:
+            self.report({'ERROR'}, "No armature found")
+            return {'CANCELLED'}
+
+        # Canvas on muscle
+        if not any(m.type == 'DYNAMIC_PAINT' for m in muscle.modifiers):
+            bpy.ops.object.modifier_add(type='DYNAMIC_PAINT')
+        dp_mod = next(m for m in muscle.modifiers if m.type == 'DYNAMIC_PAINT')
+        dp_mod.ui_type = 'CANVAS'
+        if not dp_mod.canvas_settings.canvas_surfaces:
+            bpy.ops.dpaint.surface_slot_add({'object': muscle})
+        surface = dp_mod.canvas_settings.canvas_surfaces[0]
+        surface.surface_type = 'WEIGHT'
+        surface.brush_group = muscle.vertex_groups.get("Muscle_Pin")
+
+        # Brushes on bones
+        selected_bones = [b for b in arm.pose.bones if b.bone.select] or arm.pose.bones
+        for bone in selected_bones:
+            empty_name = f"DP_Brush_{bone.name}"
+            if empty_name in bpy.data.objects:
+                continue
+            bpy.ops.object.empty_add(type='PLAIN_AXES')
+            brush = context.active_object
+            brush.name = empty_name
+            brush.parent = arm
+            brush.parent_type = 'BONE'
+            brush.parent_bone = bone.name
+            brush.empty_display_size = 0.05
+            brush.hide_viewport = True
+
+            bpy.ops.object.modifier_add(type='DYNAMIC_PAINT')
+            brush.modifiers[-1].ui_type = 'BRUSH'
+            bset = brush.modifiers[-1].brush_settings
+            bset.paint_source = 'PROXIMITY'
+            bset.strength = 0.15
+            bset.distance = 0.3
+            bset.invert_proximity = True
+
+        self.report({'INFO'}, "Motion painter setup complete!")
+        return {'FINISHED'}
+
+class MUSCLE_OT_setup_compression(Operator):
+    bl_idname = "muscle.setup_compression"
+    bl_label = "Setup Muscle Compression"
+    bl_description = "Auto-stiffens muscles under clothing using Dynamic Paint"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        muscle = context.active_object
+        if not muscle or muscle.type != 'MESH':
+            self.report({'ERROR'}, "Select a muscle mesh")
+            return {'CANCELLED'}
+
+        vg = muscle.vertex_groups.get("Muscle_Pin") or muscle.vertex_groups.new(name="Muscle_Pin")
+
+        dp_mod = next((m for m in muscle.modifiers if m.type == 'DYNAMIC_PAINT'), None)
+        if not dp_mod:
+            bpy.ops.object.modifier_add(type='DYNAMIC_PAINT')
+            dp_mod = muscle.modifiers[-1]
+        dp_mod.ui_type = 'CANVAS'
+
+        surf = None
+        for s in dp_mod.canvas_settings.canvas_surfaces:
+            if s.name == "Compression":
+                surf = s
+                break
+        if not surf:
+            bpy.ops.dpaint.surface_slot_add({'object': muscle})
+            surf = dp_mod.canvas_settings.canvas_surfaces[-1]
+            surf.name = "Compression"
+        surf.surface_type = 'WEIGHT'
+        surf.brush_group = vg
+        surf.paint_color = 'INVERT'  # Contact stiffens
+
+        # Turn selected objects into brushes
+        for obj in context.selected_objects:
+            if obj == muscle or obj.type != 'MESH':
+                continue
+            bpy.ops.object.modifier_add({'object': obj}, type='DYNAMIC_PAINT')
+            mod = obj.modifiers[-1]
+            mod.ui_type = 'BRUSH'
+            bset = mod.brush_settings
+            bset.paint_source = 'PROXIMITY'
+            bset.strength = 1.0
+            bset.distance = 0.06
+
+        self.report({'INFO'}, "Compression setup complete!")
+        return {'FINISHED'}
+
+# ──────────────────────────────────────────────────────────────
+# PANEL
+# ──────────────────────────────────────────────────────────────
+class MUSCLE_PT_panel(Panel):
+    bl_label = "Generate Muscle System"
+    bl_idname = "MUSCLE_PT_panel"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "physics"
+
+    def draw(self, context):
+        layout = self.layout
+        obj = context.active_object
+
+        if not obj:
+            layout.label(text="Select an object")
+            return
+
+        row = layout.row()
+        row.operator("muscle.generate_muscle", text="Generate Muscle", icon='OUTLINER_OB_MESH')
+
+        if obj.modifiers.get("MuscleSim"):
+            box = layout.box()
+            box.label(text="Muscle Tension", icon='PREFERENCES')
+            box.prop(obj, "muscle_tension", text="Tension", slider=True)
+
+            layout.operator("object.mode_set", text="Paint Muscle Areas", icon='BRUSH_DATA').mode = 'WEIGHT_PAINT'
+            layout.label(text="Blue = Flexible | Red = Stiff", icon='INFO')
+
+            layout.separator()
+            box2 = layout.box()
+            box2.label(text="Dynamic Simulation", icon='MOD_DYNAMICPAINT')
+            box2.operator("muscle.setup_motion_painter", text="Motion Painter", icon='BONE_DATA')
+            box2.operator("muscle.setup_compression", text="Compression Stiffener", icon='MOD_CLOTH')
+
+            layout.separator()
+            row = layout.row(align=True)
+            row.operator("ptcache.bake_all", text="Bake", icon='PHYSICS')
+            row.operator("ptcache.free_bake_all", text="Free Bake", icon='TRASH')
+
+# ──────────────────────────────────────────────────────────────
+# REGISTER
+# ──────────────────────────────────────────────────────────────
 def register():
-    bpy.utils.register_class(OBJECT_OT_generate_muscle_system)
-    bpy.types.VIEW3D_MT_mesh_add.append(menu_func)
+    bpy.utils.register_class(MUSCLE_OT_generate_muscle)
+    bpy.utils.register_class(MUSCLE_OT_setup_motion_painter)
+    bpy.utils.register_class(MUSCLE_OT_setup_compression)
+    bpy.utils.register_class(MUSCLE_PT_panel)
+
+    bpy.types.Object.muscle_tension = FloatProperty(
+        name="Muscle Tension",
+        default=0.0, min=0.0, max=1.0,
+        update=update_muscle_tension
+    )
 
 def unregister():
-    bpy.utils.unregister_class(OBJECT_OT_generate_muscle_system)
-    bpy.types.VIEW3D_MT_mesh_add.remove(menu_func)
+    bpy.utils.unregister_class(MUSCLE_PT_panel)
+    bpy.utils.unregister_class(MUSCLE_OT_setup_compression)
+    bpy.utils.unregister_class(MUSCLE_OT_setup_motion_painter)
+    bpy.utils.unregister_class(MUSCLE_OT_generate_muscle)
+    del bpy.types.Object.muscle_tension
 
 if __name__ == "__main__":
     register()
