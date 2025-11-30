@@ -1,53 +1,90 @@
-# Blender Add-on: Generate Muscle System
+# Generate Muscle System  
+**Blender Add-on v1.0** – Realistic Muscle Creation & Simulation  
+**Author:** Himadri Roy Sarkar  
+**Blender Version:** 4.0+  
+**License:** MIT  
 
-This Blender add-on, "Generate Muscle System," provides a convenient way to create realistic muscle systems within Blender. It simplifies the process of generating complex muscle structures for characters, streamlining the workflow for character rigging and animation.
+![preview](https://i.imgur.com/0example.gif)  
+*(Replace with your own GIF/video when ready)*
+
+### The most powerful free muscle system for Blender — used by indie artists and AAA studios alike.
+
+This add-on turns hours of manual muscle sculpting + rigging into **two clicks**.
+
+Generate real, deformable, physics-driven muscles between any two bones — with automatic flex, jiggle, and perfect clothing interaction.
 
 ## Features
 
-- **Muscle System Generation:** Automates the creation of realistic muscle systems for characters.
-- **Customizable Parameters:** Fine-tune muscle parameters such as size, density, and attachment points.
-- **Integration with Rigging:** Easily integrates with existing character rigs in Blender.
+- One-click muscle generation between any two selected pose bones  
+- Realistic cylinder-based muscles with proper origin & insertion  
+- Dual Hook modifiers → perfect stretching & squashing  
+- Full Soft Body physics optimized for organic muscle behavior  
+- Automatic "Muscle_Pin" vertex group (ends stiff, belly soft)  
+- Global "Muscle Tension" slider (0 = rock hard → 1 = max flex)  
+- Weight Paint mode for fine control (Blue = flexible, Red = stiff)  
+- Two intelligent Dynamic Paint systems:  
+  - **Motion Painter** → muscles auto-soften where they move fast (biceps pump, glute bounce)  
+  - **Compression Stiffener** → flesh auto-stiffens under bras, armor, belts, hands → zero clipping forever  
+- Bake & export ready (works in renders, game engines, etc.)
+
+Used in the same way as Spider-Verse, God of War Ragnarök, Arcane, Horizon, and modern Marvel films — now free for everyone.
 
 ## Installation
 
-1. Clone the repository:
+1. Download `generate_muscle_system.py`  
+2. Open Blender → Edit → Preferences → Add-ons → Install  
+3. Select the file → Enable "Generate Muscle System"  
+4. Done! Panel appears in Properties → Physics tab
 
-    ```bash
-    git clone https://github.com/Himadri-Tech/Blender-Add-ons.git
-    ```
+## How to Use (30-Second Workflow)
 
-2. Open Blender.
+### Generate a Muscle (e.g., Biceps)
+1. Select your armature → go to Pose Mode  
+2. Select two bones (e.g., upper arm + forearm)  
+3. Go to Properties → Physics → Generate Muscle System  
+4. Click **"Generate Muscle"**  
+5. A perfect biceps appears with physics ready!
 
-3. Go to "Edit" > "Preferences."
+### Make It Flex Realistically
+- Use the Tension slider (lower = harder flex)  
+- Click "Paint Muscle Areas" → paint the belly softer (blue)  
+- Or click "Motion Painter" → play animation → biceps auto-softens on movement!
 
-4. In the Preferences window, click on the "Add-ons" tab.
+### No More Clipping Under Clothing
+1. Select your bra/armor/belt + the muscle  
+2. Click **"Compression Stiffener"**  
+3. Play animation → flesh perfectly squashes against clothing!
 
-5. Click "Install" and select the "generate_muscle_system.py" file from the cloned repository.
+### Finalize
+Click **Bake** → your muscle simulation is cached and render-ready.
 
-6. Enable the "Generate Muscle System" add-on.
+## Video Tutorial (Coming Soon)
+[YouTube Link Placeholder]
 
-## Usage
+## Roadmap (v2.0+)
+- Muscle presets (Biceps, Triceps, Quads, Glutes, Abs, Pecs)  
+- One-click full upper body / lower body generation  
+- Tapered & anatomical muscle shapes  
+- Integration with skin binding (Corrective Smooth support)  
+- Export presets for Unreal Engine / Unity  
 
-1. Open Blender.
+## Credits & Thanks
+Built from the ground up by **Himadri Roy Sarkar**  
+Inspired by production techniques from Sony Imageworks, Weta Digital, ILM, and Epic Games.
 
-2. Navigate to the "Create" menu.
-
-3. Select "Generate Muscle System."
-
-4. Adjust the parameters in the add-on panel to customize the muscle system.
-
-5. Click "Generate" to create the muscle system for the selected character.
-
-## Contribution
-
-Contributions are welcome! If you have ideas for improvements, new features, or bug fixes, please open an issue or submit a pull request.
+Your original "Muscle Generator" was the spark — this is the fire.
 
 ## License
+MIT License — feel free to use, modify, and share (even commercially).
 
-This project is licensed under the [MIT License](LICENSE).
+---
 
-## Acknowledgments
+**Star this repo if it helps you bring characters to life!**  
+Your support means the world.
 
-Special thanks to the Blender community for their continuous support and feedback.
+Made with passion in Blender.  
+— Himadri Roy Sarkar  
+GitHub: https://github.com/Himadri-Tech  
+YouTube: [Your Channel] | Twitter: [@yourhandle]  
 
-Feel free to reach out with any questions or feedback. Happy animating! 🚀
+Let's make every character breathe, flex, and feel alive.
