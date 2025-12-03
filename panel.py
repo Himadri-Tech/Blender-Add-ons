@@ -49,6 +49,11 @@ class MUSCLE_PT_create(bpy.types.Panel):
         col.separator()
         col.operator("muscle.arp_auto", text="Auto-Attach to Auto-Rig Pro", icon='PLUGIN')
 
+        col.separator()
+        row = col.row(align=True)
+        op = row.operator("wm.url_open", text="Check for Updates", icon='QUESTION')
+        op.url = "https://github.com/Himadri-Tech/Blender-Add-ons"
+
 
 class MUSCLE_PT_system(bpy.types.Panel):
     bl_label = "Muscle System"
