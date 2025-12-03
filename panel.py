@@ -1,4 +1,4 @@
-# panel.py — FINAL CLEAN VERSION (NO INDENTED COMMENTS
+# panel.py — FINAL CLEAN VERSION (NO INDENTED COMMENTS)
 # BlendArmory Muscles 3.3
 
 import bpy
@@ -43,13 +43,11 @@ class MUSCLE_PT_create(bpy.types.Panel):
         col.label(text="Presets:")
         row = col.row(align=True)
         for p in PRESETS:
-            row.operator("muscle.create", text=p).preset = p
+            op = row.operator("muscle.create", text=p)
+            op.preset = p
 
         col.separator()
         col.operator("muscle.arp_auto", text="Auto-Attach to Auto-Rig Pro", icon='PLUGIN')
-
-
-class MUSCLE_PT_system, MUSCLE_PT_pinning, etc. follow same clean style
 
 
 class MUSCLE_PT_system(bpy.types.Panel):

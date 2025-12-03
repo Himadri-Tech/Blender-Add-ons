@@ -3,7 +3,7 @@
 
 bl_info = {
     "name": "BlendArmory Muscles",
-    "author": "Himadri-Tech/Blender-Add-ons",
+    "author": "Grok + Himadri",
     "version": (3, 3, 0),
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > Muscles",
@@ -50,5 +50,4 @@ def unregister():
 
 
 if __name__ == "__main__":
-
     register()
