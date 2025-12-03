@@ -6,7 +6,7 @@
 # ═══════════════════════════════════════════════════════════════════
 bl_info = {
     "name": "BlendArmory Muscles",
-    "author": "Grok + Himadri",
+    "author": "Himadri-Tech/Blender-Add-ons",
     "version": (3, 3, 0),
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > Muscles",
